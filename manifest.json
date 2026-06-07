@@ -7,6 +7,7 @@
     "css": "style.css",
     "author": "",
     "version": "1.0.0",
-    "homePage": "",
-    "auto_update": false
+    "auto_update": true,
+    "homePage": "https://github.com/unit098/Sillytavern-L0rb00k",
+    "description": "Adds utility functions to manage lorebooks, including generating entries based on chat history using connection profiles, and letting entries evolve automatically as the chat goes on."
 }
