@@ -1,0 +1,623 @@
+/* ============================================================
+   Lore Manager — style.css
+   ============================================================ */
+
+/* ---- Dropdown Popover ---- */
+#loreMgrDropdown {
+    position: fixed;
+    z-index: 10000;
+    background: var(--SmartThemeBlurTintColor, #1a1a2e);
+    border: 1px solid var(--SmartThemeBorderColor, #555);
+    border-radius: 6px;
+    min-width: 240px;
+    max-width: 320px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+}
+
+.loreMgr-dropdown-inner {
+    padding: 8px;
+}
+
+#loreMgrSearch {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 6px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--SmartThemeBorderColor, #555);
+    border-radius: 4px;
+    color: var(--SmartThemeBodyColor, #ddd);
+    font-size: 0.9em;
+    outline: none;
+}
+
+#loreMgrSearch:focus {
+    border-color: var(--SmartThemeEmColor, #a0c4ff);
+}
+
+#loreMgrList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 190px;
+    overflow-y: auto;
+}
+
+.loreMgr-dropdown-item {
+    padding: 7px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    color: var(--SmartThemeBodyColor, #ddd);
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    outline: none;
+}
+
+.loreMgr-dropdown-item:hover,
+.loreMgr-dropdown-item:focus {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.loreMgr-dropdown-item.loreMgr-preselected {
+    color: var(--SmartThemeEmColor, #a0c4ff);
+    font-weight: 600;
+}
+
+.loreMgr-dropdown-empty {
+    padding: 10px;
+    text-align: center;
+    opacity: 0.5;
+    font-size: 0.85em;
+    font-style: italic;
+}
+
+/* ---- Floating Panel ---- */
+.loreMgr-panel {
+    position: fixed;
+    width: 400px;
+    min-height: 200px;
+    max-height: 80vh;
+    background: var(--SmartThemeBlurTintColor, #1c1c2e);
+    border: 1px solid var(--SmartThemeBorderColor, #555);
+    border-radius: 8px;
+    box-shadow: 0 8px 36px rgba(0, 0, 0, 0.65);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.loreMgr-panel-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid var(--SmartThemeBorderColor, #444);
+    cursor: grab;
+    user-select: none;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.loreMgr-panel-header:active {
+    cursor: grabbing;
+}
+
+.loreMgr-panel-title {
+    flex: 1;
+    font-weight: 600;
+    font-size: 0.92em;
+    color: var(--SmartThemeBodyColor, #eee);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.loreMgr-panel-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.loreMgr-new-entry-btn.menu_button {
+    padding: 2px 8px !important;
+    font-size: 0.78em !important;
+    line-height: 1.6 !important;
+}
+
+.loreMgr-close-btn {
+    opacity: 0.6;
+    font-size: 0.9em;
+    cursor: pointer;
+    padding: 3px 5px;
+    border-radius: 3px;
+}
+
+.loreMgr-close-btn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ---- Creation Form ---- */
+.loreMgr-creation-form {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor, #444);
+    background: rgba(0, 0, 0, 0.18);
+    flex-shrink: 0;
+}
+
+.loreMgr-form-label {
+    display: block;
+    font-size: 0.8em;
+    margin: 4px 0 2px;
+    opacity: 0.75;
+}
+
+.loreMgr-form-hint {
+    opacity: 0.55;
+    font-style: italic;
+}
+
+.loreMgr-creation-form .loreMgr-topic-input,
+.loreMgr-creation-form .loreMgr-keywords-input {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 4px;
+}
+
+.loreMgr-form-row {
+    font-size: 0.85em;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.loreMgr-form-row .loreMgr-msgcount-input {
+    width: 64px;
+    display: inline-block;
+}
+
+.loreMgr-form-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.loreMgr-form-actions .menu_button {
+    padding: 3px 10px !important;
+    font-size: 0.82em !important;
+}
+
+.loreMgr-form-status {
+    min-height: 1.3em;
+    font-size: 0.82em;
+    margin-top: 5px;
+    color: var(--SmartThemeEmColor, #a0c4ff);
+}
+
+/* ---- Entry List ---- */
+.loreMgr-entry-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.loreMgr-loading,
+.loreMgr-empty {
+    padding: 18px;
+    text-align: center;
+    opacity: 0.5;
+    font-size: 0.88em;
+    font-style: italic;
+}
+
+.loreMgr-error {
+    padding: 14px;
+    text-align: center;
+    color: #ff7070;
+    font-size: 0.85em;
+}
+
+.loreMgr-entry-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.loreMgr-entry-summary {
+    padding: 8px 12px 6px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.loreMgr-entry-summary:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.loreMgr-entry-title-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.loreMgr-entry-title {
+    font-weight: 600;
+    font-size: 0.88em;
+    color: var(--SmartThemeBodyColor, #eee);
+}
+
+.loreMgr-evolve-badge {
+    font-size: 0.78em;
+    opacity: 0.75;
+    cursor: default;
+    user-select: none;
+}
+
+.loreMgr-entry-preview {
+    font-size: 0.78em;
+    opacity: 0.55;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* ---- Entry Detail ---- */
+.loreMgr-entry-detail {
+    padding: 8px 12px 12px;
+    background: rgba(0, 0, 0, 0.14);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.loreMgr-keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.loreMgr-chip {
+    background: rgba(255, 255, 255, 0.09);
+    border-radius: 10px;
+    padding: 2px 9px;
+    font-size: 0.76em;
+    color: var(--SmartThemeEmColor, #a0c4ff);
+}
+
+.loreMgr-content-edit {
+    width: 100%;
+    min-height: 80px;
+    box-sizing: border-box;
+    resize: vertical;
+    font-size: 0.84em;
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.loreMgr-detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.loreMgr-save-btn.menu_button {
+    padding: 3px 10px !important;
+    font-size: 0.82em !important;
+}
+
+.loreMgr-evolve-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.84em;
+    cursor: pointer;
+    user-select: none;
+    opacity: 0.85;
+}
+
+/* ---- Extension Settings Panel ---- */
+.loreMgr-settings-section {
+    margin-bottom: 16px;
+}
+
+.loreMgr-settings-heading {
+    font-size: 0.78em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    opacity: 0.6;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.loreMgr-settings-label {
+    display: block;
+    font-size: 0.84em;
+    margin-bottom: 3px;
+    opacity: 0.82;
+}
+
+.loreMgr-profile-select {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    background: var(--SmartThemeBlurTintColor, #111);
+    color: var(--SmartThemeBodyColor, #ddd);
+    border: 1px solid var(--SmartThemeBorderColor, #555);
+    border-radius: 4px;
+    padding: 5px 8px;
+}
+
+.loreMgr-settings-section .text_pole {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+.loreMgr-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.loreMgr-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.88em;
+    cursor: pointer;
+    user-select: none;
+}
+
+.loreMgr-warn {
+    font-size: 0.82em;
+    color: #ffb347;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* ---- Diff / Confirm Modal ---- */
+.loreMgr-diff-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loreMgr-diff-modal {
+    background: var(--SmartThemeBlurTintColor, #1c1c2e);
+    border: 1px solid var(--SmartThemeBorderColor, #555);
+    border-radius: 10px;
+    width: 700px;
+    max-width: 92vw;
+    max-height: 82vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 16px 56px rgba(0, 0, 0, 0.75);
+}
+
+.loreMgr-diff-header {
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor, #444);
+    flex-shrink: 0;
+}
+
+.loreMgr-diff-subtitle {
+    display: block;
+    font-size: 0.82em;
+    opacity: 0.6;
+    margin-top: 4px;
+}
+
+.loreMgr-diff-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.loreMgr-diff-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    overflow: hidden;
+}
+
+.loreMgr-diff-col + .loreMgr-diff-col {
+    border-left: 1px solid var(--SmartThemeBorderColor, #444);
+}
+
+.loreMgr-diff-label {
+    font-size: 0.76em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+.loreMgr-diff-old .loreMgr-diff-label { color: #ff7070; }
+.loreMgr-diff-new .loreMgr-diff-label { color: #6eff9a; }
+
+.loreMgr-diff-text {
+    font-size: 0.84em;
+    line-height: 1.55;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    flex: 1;
+    opacity: 0.88;
+}
+
+.loreMgr-diff-actions {
+    padding: 12px 18px;
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid var(--SmartThemeBorderColor, #444);
+    flex-shrink: 0;
+}
+
+/* ---- Evolution Toast ---- */
+.loreMgr-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--SmartThemeBlurTintColor, #1c1c2e);
+    border: 1px solid var(--SmartThemeBorderColor, #555);
+    border-radius: 8px;
+    width: 340px;
+    max-width: calc(100vw - 48px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
+    z-index: 99998;
+    overflow: hidden;
+}
+
+.loreMgr-toast-header {
+    padding: 10px 14px 4px;
+    font-size: 0.88em;
+}
+
+.loreMgr-toast-body {
+    padding: 2px 14px 6px;
+    font-size: 0.8em;
+    opacity: 0.7;
+    line-height: 1.45;
+}
+
+.loreMgr-toast-bar {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.loreMgr-toast-progress {
+    height: 100%;
+    width: 100%;
+    background: var(--SmartThemeEmColor, #a0c4ff);
+}
+
+.loreMgr-toast-actions {
+    padding: 6px 14px 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.loreMgr-toast-actions .menu_button {
+    padding: 2px 10px !important;
+    font-size: 0.8em !important;
+}
+
+/* ---- Prompt Textareas (Settings) ---- */
+.loreMgr-prompt-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    font-size: 0.82em;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    font-family: inherit;
+}
+
+/* ---- Preset List ---- */
+.loreMgr-add-preset-btn {
+    margin-top: 6px;
+    padding: 3px 10px !important;
+    font-size: 0.82em !important;
+}
+
+.loreMgr-preset-empty {
+    font-size: 0.82em;
+    opacity: 0.5;
+    font-style: italic;
+    padding: 6px 0;
+}
+
+.loreMgr-preset-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.loreMgr-preset-name {
+    flex: 1;
+    font-size: 0.86em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.loreMgr-scope-badge {
+    font-size: 0.72em;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.loreMgr-scope-global {
+    background: rgba(100, 180, 255, 0.18);
+    color: #7ec8ff;
+}
+
+.loreMgr-scope-chat {
+    background: rgba(255, 180, 80, 0.18);
+    color: #ffb347;
+}
+
+.loreMgr-preset-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.loreMgr-preset-actions .menu_button {
+    padding: 1px 8px !important;
+    font-size: 0.76em !important;
+}
+
+/* ---- Preset Edit Form ---- */
+.loreMgr-preset-form {
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--SmartThemeBorderColor, #555);
+    border-radius: 6px;
+}
+
+.loreMgr-preset-form-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.loreMgr-preset-form-actions .menu_button {
+    padding: 3px 10px !important;
+    font-size: 0.82em !important;
+}
+
+/* ---- Panel Preset Select ---- */
+.loreMgr-preset-select {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+    background: var(--SmartThemeBlurTintColor, #111);
+    color: var(--SmartThemeBodyColor, #ddd);
+    border: 1px solid var(--SmartThemeBorderColor, #555);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.84em;
+}

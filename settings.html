@@ -1,0 +1,63 @@
+<div class="lore-manager-settings">
+    <div class="inline-drawer">
+        <div class="inline-drawer-toggle inline-drawer-header">
+            <b>Lore Manager</b>
+            <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+        </div>
+        <div class="inline-drawer-content">
+
+            <div class="loreMgr-settings-section">
+                <div class="loreMgr-settings-heading">LLM Profiles</div>
+                <label class="loreMgr-settings-label" for="loreMgr-create-profile">Entry Creation Profile</label>
+                <select id="loreMgr-create-profile" class="loreMgr-profile-select"></select>
+                <label class="loreMgr-settings-label" for="loreMgr-evolve-profile">Entry Evolution Profile</label>
+                <select id="loreMgr-evolve-profile" class="loreMgr-profile-select"></select>
+            </div>
+
+            <div class="loreMgr-settings-section">
+                <div class="loreMgr-settings-heading">Generation Defaults</div>
+                <label class="loreMgr-settings-label" for="loreMgr-default-msg-count">Recent messages to include</label>
+                <input type="number" id="loreMgr-default-msg-count" class="text_pole" min="1" max="200" value="10">
+                <label class="loreMgr-settings-label" for="loreMgr-default-max-tokens">Max tokens for LLM response</label>
+                <input type="number" id="loreMgr-default-max-tokens" class="text_pole" min="50" max="4000" value="500">
+            </div>
+
+            <div class="loreMgr-settings-section">
+                <div class="loreMgr-settings-heading">New Entry Defaults</div>
+                <label class="loreMgr-settings-label" for="loreMgr-default-position">Position (0=before char, 1=after char, 4=at depth)</label>
+                <input type="number" id="loreMgr-default-position" class="text_pole" min="0" max="4" value="0">
+                <label class="loreMgr-settings-label" for="loreMgr-default-depth">Depth (for at-depth position)</label>
+                <input type="number" id="loreMgr-default-depth" class="text_pole" min="0" max="99" value="4">
+                <label class="loreMgr-settings-label" for="loreMgr-default-order">Order (higher = inserted first)</label>
+                <input type="number" id="loreMgr-default-order" class="text_pole" min="0" max="999" value="100">
+                <label class="loreMgr-settings-label checkbox_label">
+                    <input type="checkbox" id="loreMgr-default-constant">
+                    Always active (constant)
+                </label>
+            </div>
+
+            <div class="loreMgr-settings-section">
+                <div class="loreMgr-settings-heading">Evolution Mode</div>
+                <div class="loreMgr-radio-group">
+                    <label class="loreMgr-radio-label">
+                        <input type="radio" name="loreMgr-evolution-mode" value="auto">
+                        Auto-save silently
+                    </label>
+                    <label class="loreMgr-radio-label">
+                        <input type="radio" name="loreMgr-evolution-mode" value="confirm" checked>
+                        Show diff &amp; confirm
+                    </label>
+                    <label class="loreMgr-radio-label">
+                        <input type="radio" name="loreMgr-evolution-mode" value="timeout">
+                        Notify with countdown auto-save
+                    </label>
+                </div>
+                <div id="loreMgr-timeout-row" style="display:none;">
+                    <label class="loreMgr-settings-label" for="loreMgr-evolution-timeout">Auto-save after (seconds)</label>
+                    <input type="number" id="loreMgr-evolution-timeout" class="text_pole" min="5" max="300" value="30">
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
