@@ -118,6 +118,14 @@ const SETTINGS_HTML = `
                 </div>
             </div>
 
+            <div class="loreMgr-settings-section">
+                <div class="loreMgr-settings-heading">Debug</div>
+                <label class="loreMgr-settings-label checkbox_label">
+                    <input type="checkbox" id="loreMgr-debug-mode">
+                    Enable debug mode
+                </label>
+            </div>
+
         </div>
     </div>
 </div>`;
@@ -157,10 +165,12 @@ const DEFAULT_SETTINGS = {
     evolutionTimeout:        30,
     panelPositions:          {},         // { [bookName]: { top, left } }
     evolvingEntries:         {},         // { [bookName]: uid[] }
+    entryEditTimes:          {},         // { [bookName]: { [uid]: timestamp } }
     dismissTopInfoBarNotice: false,
     createSystemPrompt:      DEFAULT_CREATE_PROMPT,
     evolveSystemPrompt:      DEFAULT_EVOLVE_PROMPT,
     promptPresets:           [],         // [{ id, name, scope:'global'|'chat', chatId, systemPrompt }]
+    debugMode:               false,         // [{ id, name, scope:'global'|'chat', chatId, systemPrompt }]
 };
 
 /** Guard: prevent concurrent evolution runs (one pass at a time). */
@@ -488,11 +498,22 @@ function buildLorePanel(bookName, id) {
                 <button class="loreMgr-generate-btn menu_button">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> Generate
                 </button>
+                <button class="loreMgr-debug-gen-btn menu_button" title="Log payload to console without sending" style="display:none;">
+                    <i class="fa-solid fa-terminal"></i> Log Payload
+                </button>
                 <button class="loreMgr-form-cancel-btn menu_button">Cancel</button>
             </div>
             <div class="loreMgr-form-status"></div>
         </div>
+        <div class="loreMgr-search-bar">
+            <i class="fa-solid fa-magnifying-glass loreMgr-search-icon"></i>
+            <input type="text" class="loreMgr-search-input" placeholder="Search entries…" spellcheck="false" autocomplete="off">
+        </div>
         <div class="loreMgr-entry-list"></div>`;
+
+    // Restore saved size
+    if (savedPos.width)  panel.style.width  = `${savedPos.width}px`;
+    if (savedPos.height) panel.style.height = `${savedPos.height}px`;
 
     const container = document.getElementById('movingDivs') ?? document.body;
     container.appendChild(panel);
@@ -504,9 +525,21 @@ function buildLorePanel(bookName, id) {
         stop() {
             const pos = $(panel).position();
             const s   = getSettings();
-            s.panelPositions[bookName] = { top: pos.top, left: pos.left };
+            s.panelPositions[bookName] = { ...(s.panelPositions[bookName] ?? {}), top: pos.top, left: pos.left };
             SillyTavern.getContext().saveSettingsDebounced();
         },
+    });
+
+    // Save size when user resizes via native CSS resize handle
+    let _lastW = panel.offsetWidth, _lastH = panel.offsetHeight;
+    panel.addEventListener('mouseup', () => {
+        const w = panel.offsetWidth, h = panel.offsetHeight;
+        if (w !== _lastW || h !== _lastH) {
+            _lastW = w; _lastH = h;
+            const s = getSettings();
+            s.panelPositions[bookName] = { ...(s.panelPositions[bookName] ?? {}), width: w, height: h };
+            SillyTavern.getContext().saveSettingsDebounced();
+        }
     });
 
     // Bring to front when clicked anywhere on the panel
@@ -520,6 +553,11 @@ function buildLorePanel(bookName, id) {
 
     wireCreationForm(panel, bookName);
     renderPanelEntries(panel, bookName);
+
+    // Search bar
+    panel.querySelector('.loreMgr-search-input').addEventListener('input', e => {
+        filterEntries(panel, e.target.value);
+    });
 }
 
 // ============================================================
@@ -539,6 +577,9 @@ function wireCreationForm(panel, bookName) {
         form.style.display = isVisible ? 'none' : 'block';
         if (!isVisible) {
             populatePresetSelect(panel.querySelector('.loreMgr-preset-select'));
+            // Show/hide debug button based on current setting
+            const dbgBtn = panel.querySelector('.loreMgr-debug-gen-btn');
+            if (dbgBtn) dbgBtn.style.display = getSettings().debugMode ? '' : 'none';
             topicInput.focus();
         }
     });
@@ -557,6 +598,19 @@ function wireCreationForm(panel, bookName) {
     kwInput.addEventListener('input', () => { kwInput.dataset.userEdited = '1'; });
 
     generateBtn.addEventListener('click', () => handleGenerateEntry(panel, bookName));
+
+    // Debug: log generation payload without sending
+    panel.querySelector('.loreMgr-debug-gen-btn').addEventListener('click', () => {
+        const topic    = topicInput.value.trim() || '(your topic here)';
+        const kwRaw    = kwInput.value.trim();
+        const msgCount = Math.max(1, parseInt(panel.querySelector('.loreMgr-msgcount-input').value) || 10);
+        const presetId = panel.querySelector('.loreMgr-preset-select')?.value ?? 'default';
+        const systemPrompt = resolvePresetPrompt(presetId);
+        const keywords = kwRaw
+            ? [...new Set(kwRaw.split(',').map(k => k.trim().toLowerCase()).filter(Boolean))]
+            : [topic.toLowerCase()];
+        logGenerationPayload({ topic, keywords, msgCount, systemPrompt });
+    });
 
     // Enter in either field triggers generation
     topicInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleGenerateEntry(panel, bookName); });
@@ -659,11 +713,18 @@ async function renderPanelEntries(panel, bookName) {
     listEl.innerHTML = '<div class="loreMgr-loading">Loading entries…</div>';
 
     try {
-        const data     = await loadWorldInfo(bookName);
-        const entries  = Object.values(data.entries)
-            .sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
+        const data        = await loadWorldInfo(bookName);
         const settings    = getSettings();
+        const editTimes   = settings.entryEditTimes?.[bookName] ?? {};
         const evolvingSet = new Set(settings.evolvingEntries?.[bookName] ?? []);
+
+        // Sort: most recently manually edited first, then by lorebook order
+        const entries = Object.values(data.entries).sort((a, b) => {
+            const tA = editTimes[a.uid] ?? 0;
+            const tB = editTimes[b.uid] ?? 0;
+            if (tA !== tB) return tB - tA;
+            return (a.order ?? 100) - (b.order ?? 100);
+        });
 
         listEl.innerHTML = '';
 
@@ -675,13 +736,30 @@ async function renderPanelEntries(panel, bookName) {
         for (const entry of entries) {
             listEl.appendChild(buildEntryRow(entry, bookName, evolvingSet, data));
         }
+
+        // Re-apply active search filter if any
+        const searchVal = panel.querySelector('.loreMgr-search-input')?.value;
+        if (searchVal) filterEntries(panel, searchVal);
     } catch (err) {
         listEl.innerHTML = `<div class="loreMgr-error">Error loading entries: ${escapeHtml(err.message)}</div>`;
         console.error('[LoreManager] Load entries error:', err);
     }
 }
 
+function filterEntries(panel, query) {
+    const q = query.trim().toLowerCase();
+    panel.querySelectorAll('.loreMgr-entry-row').forEach(row => {
+        if (!q) { row.style.display = ''; return; }
+        const title   = (row.querySelector('.loreMgr-entry-title')?.textContent   ?? '').toLowerCase();
+        const preview = (row.querySelector('.loreMgr-entry-preview')?.textContent ?? '').toLowerCase();
+        const content = (row.querySelector('.loreMgr-content-edit')?.value        ?? '').toLowerCase();
+        const chips   = [...row.querySelectorAll('.loreMgr-chip')].map(c => c.textContent.toLowerCase()).join(' ');
+        row.style.display = (title.includes(q) || preview.includes(q) || content.includes(q) || chips.includes(q)) ? '' : 'none';
+    });
+}
+
 function buildEntryRow(entry, bookName, evolvingSet, data) {
+    const settings   = getSettings();
     const isEvolving = evolvingSet.has(entry.uid);
     const title      = entry.comment || entry.key?.[0] || 'Untitled';
     const contentStr = entry.content ?? '';
@@ -710,6 +788,9 @@ function buildEntryRow(entry, bookName, evolvingSet, data) {
                     <input type="checkbox" class="loreMgr-evolve-toggle"${isEvolving ? ' checked' : ''}>
                     <span>Evolving ♻</span>
                 </label>
+                <button class="loreMgr-debug-evo-btn menu_button" title="Log evolution payload to console" style="display:${settings.debugMode ? '' : 'none'}; font-size:0.76em; padding:1px 8px;">
+                    <i class="fa-solid fa-terminal"></i>
+                </button>
             </div>
         </div>`;
 
@@ -726,8 +807,14 @@ function buildEntryRow(entry, bookName, evolvingSet, data) {
             data.entries[entry.uid].content = newContent;
             await saveWorldInfo(bookName, data, true);
             entry.content = newContent;
-            const newPreview = newContent.length > 120 ? `${newContent.slice(0, 120)}…` : newContent;
+            const newPreview = newContent.length > 120 ? `${newContent.slice(0, 120)}\u2026` : newContent;
             row.querySelector('.loreMgr-entry-preview').textContent = newPreview;
+            // Record edit time for sort-by-last-edited
+            const s = getSettings();
+            if (!s.entryEditTimes)           s.entryEditTimes = {};
+            if (!s.entryEditTimes[bookName]) s.entryEditTimes[bookName] = {};
+            s.entryEditTimes[bookName][entry.uid] = Date.now();
+            SillyTavern.getContext().saveSettingsDebounced();
         } catch (err) {
             console.error('[LoreManager] Save entry error:', err);
         }
@@ -750,6 +837,12 @@ function buildEntryRow(entry, bookName, evolvingSet, data) {
         } else if (!checked && badge) {
             badge.remove();
         }
+    });
+
+    // Debug: log evolution payload for this entry
+    row.querySelector('.loreMgr-debug-evo-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        logEvolutionPayload({ bookName, uid: entry.uid, content: row.querySelector('.loreMgr-content-edit').value });
     });
 
     return row;
@@ -1074,6 +1167,17 @@ function wireSettingsUi() {
 
     refreshTimeoutRowVisibility();
 
+    // Debug mode toggle
+    const debugCb    = document.getElementById('loreMgr-debug-mode');
+    const debugTools = document.getElementById('loreMgr-debug-tools');
+    if (debugCb) {
+        debugCb.checked = !!s.debugMode;
+        debugCb.addEventListener('change', () => {
+            s.debugMode = debugCb.checked;
+            ctx.saveSettingsDebounced();
+        });
+    }
+
     // Prompt textareas
     bindTextarea('loreMgr-create-prompt', () => s.createSystemPrompt, v => { s.createSystemPrompt = v; });
     bindTextarea('loreMgr-evolve-prompt', () => s.evolveSystemPrompt, v => { s.evolveSystemPrompt = v; });
@@ -1096,6 +1200,109 @@ function bindNum(id, getter, setter) {
         setter(Number(el.value));
         SillyTavern.getContext().saveSettingsDebounced();
     });
+}
+
+// ============================================================
+// Debug helpers
+// ============================================================
+
+function logGenerationPayload({ topic, keywords, msgCount, systemPrompt } = {}) {
+    const settings     = getSettings();
+    const ctx          = SillyTavern.getContext();
+    const resolvedMsgCount    = msgCount    ?? settings.defaultMsgCount ?? 10;
+    const resolvedPrompt      = systemPrompt ?? settings.createSystemPrompt;
+    const resolvedTopic       = topic ?? '(your topic here)';
+    const chat         = ctx.chat ?? [];
+    const recent       = chat.slice(-resolvedMsgCount);
+    const transcript   = recent.map(m => `${m.name}: ${m.mes}`).join('\n');
+
+    const messages = [
+        { role: 'system', content: resolvedPrompt },
+        { role: 'user',   content: `Write a lorebook entry for the topic: "${resolvedTopic}"\n\nRecent conversation:\n${transcript}` },
+    ];
+
+    const id      = typeof settings.createProfileId === 'object' ? settings.createProfileId?.id : settings.createProfileId;
+    const profile = ctx.extensionSettings?.connectionManager?.profiles?.find(p => p.id === id);
+    const apiMap  = profile ? ctx.CONNECT_API_MAP?.[profile.api] : null;
+
+    const payload = {
+        messages,
+        model:                   profile?.model ?? '(no profile selected)',
+        chat_completion_source:  apiMap?.source ?? profile?.api ?? '(unknown)',
+        stream:                  false,
+        max_tokens:              settings.defaultMaxTokens,
+        ...(profile?.['api-url']   ? { custom_url: profile['api-url']   } : {}),
+        ...(profile?.['secret-id'] ? { secret_id:  profile['secret-id'] } : {}),
+    };
+
+    console.group('[LoreManager] DEBUG — Generation Payload');
+    console.log('Profile:', profile?.name ?? '(none)', '| Source:', apiMap?.source ?? '(n/a)');
+    console.log('Topic:', resolvedTopic, '| Keywords:', keywords ?? [resolvedTopic.toLowerCase()]);
+    console.log('Messages:', JSON.parse(JSON.stringify(messages)));
+    console.log('Full payload:', JSON.parse(JSON.stringify(payload)));
+    console.groupEnd();
+}
+
+function logEvolutionPayload({ bookName, uid, content } = {}) {
+    const settings = getSettings();
+    const ctx      = SillyTavern.getContext();
+    const chat     = ctx.chat ?? [];
+
+    const lastAi   = [...chat].reverse().find(m => !m.is_user);
+    const lastUser = [...chat].reverse().find(m =>  m.is_user);
+
+    if (!lastAi || !lastUser) {
+        console.warn('[LoreManager] DEBUG — Evolution Payload: no user+AI messages found in chat');
+        return;
+    }
+
+    const systemPrompt = settings.evolveSystemPrompt;
+    const id      = typeof settings.evolveProfileId === 'object' ? settings.evolveProfileId?.id : settings.evolveProfileId;
+    const profile = ctx.extensionSettings?.connectionManager?.profiles?.find(p => p.id === id);
+    const apiMap  = profile ? ctx.CONNECT_API_MAP?.[profile.api] : null;
+
+    function buildAndLog(entryContent, label) {
+        const userMsg  = `Current entry:\n"""\n${entryContent}\n"""\n\nRecent exchange:\nUser: ${lastUser.mes}\nAI: ${lastAi.mes}\n\nShould this entry be updated?`;
+        const messages = [
+            { role: 'system', content: systemPrompt },
+            { role: 'user',   content: userMsg },
+        ];
+        const payload = {
+            messages,
+            model:                  profile?.model ?? '(no profile selected)',
+            chat_completion_source: apiMap?.source ?? profile?.api ?? '(unknown)',
+            stream:                 false,
+            max_tokens:             settings.defaultMaxTokens,
+            ...(profile?.['api-url']   ? { custom_url: profile['api-url']   } : {}),
+            ...(profile?.['secret-id'] ? { secret_id:  profile['secret-id'] } : {}),
+        };
+        console.group(`[LoreManager] DEBUG — Evolution Payload: "${label}"`);
+        console.log('Profile:', profile?.name ?? '(none)', '| Source:', apiMap?.source ?? '(n/a)');
+        console.log('Messages:', JSON.parse(JSON.stringify(messages)));
+        console.log('Full payload:', JSON.parse(JSON.stringify(payload)));
+        console.groupEnd();
+    }
+
+    if (content !== undefined) {
+        // Called from a specific entry row — use the live textarea value
+        buildAndLog(content, bookName ? `${bookName} uid=${uid}` : 'entry');
+    } else {
+        // Fallback: use first flagged evolving entry or placeholder
+        const evolvingEntries = settings.evolvingEntries ?? {};
+        const entries = [];
+        for (const [bn, uids] of Object.entries(evolvingEntries)) {
+            for (const u of uids) entries.push({ bookName: bn, uid: u });
+        }
+        if (entries.length === 0) {
+            buildAndLog('(no evolving entries flagged — placeholder)', 'placeholder');
+        } else {
+            const { bookName: bn, uid: u } = entries[0];
+            loadWorldInfo(bn).then(data => {
+                const e = data?.entries?.[u];
+                buildAndLog(e?.content ?? '(not found)', e?.comment || e?.key?.[0] || `uid ${u}`);
+            }).catch(err => console.error('[LoreManager] DEBUG evo load error:', err));
+        }
+    }
 }
 
 function refreshTimeoutRowVisibility() {
@@ -1325,7 +1532,9 @@ function wireEvents() {
         },
         panelPositions:  saved.panelPositions  ?? {},
         evolvingEntries: saved.evolvingEntries ?? {},
+        entryEditTimes:  saved.entryEditTimes  ?? {},
         promptPresets:   saved.promptPresets   ?? [],
+        debugMode:       saved.debugMode       ?? false,
     };
 
     // Inject settings panel HTML inline — avoids template-loader 404

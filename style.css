@@ -78,8 +78,9 @@
 .loreMgr-panel {
     position: fixed;
     width: 400px;
+    height: 520px;
+    min-width: 280px;
     min-height: 200px;
-    max-height: 80vh;
     background: var(--SmartThemeBlurTintColor, #1c1c2e);
     border: 1px solid var(--SmartThemeBorderColor, #555);
     border-radius: 8px;
@@ -87,6 +88,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    resize: both;
 }
 
 .loreMgr-panel-header {
@@ -200,8 +202,39 @@
 }
 
 /* ---- Entry List ---- */
+.loreMgr-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor, #444);
+    background: rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+}
+
+.loreMgr-search-icon {
+    opacity: 0.45;
+    font-size: 0.8em;
+    flex-shrink: 0;
+}
+
+.loreMgr-search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--SmartThemeBodyColor, #ddd);
+    font-size: 0.82em;
+    padding: 2px 0;
+}
+
+.loreMgr-search-input::placeholder {
+    opacity: 0.4;
+}
+
 .loreMgr-entry-list {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 0;
 }
